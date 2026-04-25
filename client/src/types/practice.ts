@@ -16,6 +16,17 @@ export interface PracticeQuestion {
   characterDialogue?: string;
 }
 
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+  topic: string;
+}
+
+export interface ScenarioQuestion extends PracticeQuestion {
+  scenario: string;
+}
+
 export interface PracticeSession {
   id: string;
   mode: PracticeMode;
@@ -33,4 +44,20 @@ export interface PracticeState {
   activeSession: PracticeSession | null;
   isLoading: boolean;
   weakTopics: { id: string; name: string; strength: number }[];
+}
+
+// ── Content Sync Types ──
+
+export interface SyncedContentPool {
+  setId: string;
+  title: string;
+  topics: { id: string; name: string; strength: number }[];
+  questions: {
+    quiz: PracticeQuestion[];
+    flashcards: Flashcard[];
+    scenario: PracticeQuestion[];
+    challenge: PracticeQuestion[];
+    weak: PracticeQuestion[];
+  };
+  syncedAt: string;
 }

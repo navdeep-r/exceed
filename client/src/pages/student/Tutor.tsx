@@ -5,7 +5,7 @@ import {
   Sparkles, Loader2, Volume2, Send, Settings2, FileText, UserCircle2,
   Clock, Plus, Upload, Trash2, Search, BookOpen, GraduationCap
 } from 'lucide-react';
-import { MOCK_SESSIONS, TOPIC_STEPS } from '../../data/mockData';
+import { MOCK_SESSIONS, TOPIC_STEPS, LESSON_OUTLINE } from '../../data/mockData';
 
 
 
@@ -270,7 +270,20 @@ export default function TutorSessionPage() {
     );
   }
 
-  if (!currentStep) return null;
+  if (!currentStep) {
+    return (
+      <div className="flex flex-col h-[calc(100vh-64px)] items-center justify-center bg-surface-950 text-surface-400">
+        <AlertCircle className="w-12 h-12 mb-4 text-danger-400 opacity-50" />
+        <p className="text-lg mb-4">No lesson steps could be generated or found for this session.</p>
+        <button 
+          onClick={() => setViewMode('dashboard')} 
+          className="px-6 py-2 bg-surface-800 hover:bg-surface-700 text-surface-200 rounded-xl transition-colors"
+        >
+          Go Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-surface-950">
@@ -381,7 +394,7 @@ export default function TutorSessionPage() {
                 <div className="bg-surface-950 rounded-xl p-5 border border-surface-800/50">
                   <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-3">Key Takeaways</h4>
                   <ul className="space-y-2">
-                    {currentStep.keyPoints.map((kp, i) => (
+                    {currentStep.keyPoints.map((kp: string, i: number) => (
                       <li key={i} className="flex gap-2 text-[15px] text-surface-300">
                         <span className="text-primary-500 mt-0.5">•</span> {kp}
                       </li>
@@ -407,7 +420,7 @@ export default function TutorSessionPage() {
                 
                 {currentStep.question.type === 'mcq' ? (
                   <div className="grid gap-3">
-                    {currentStep.question.options?.map((opt, i) => (
+                    {currentStep.question.options?.map((opt: string, i: number) => (
                       <button
                         key={i}
                         onClick={() => !feedbackState?.isCorrect && setSelectedOption(opt)}

@@ -161,3 +161,15 @@ export const aiAPI = {
     })
   }
 }
+
+// ── Practice Content Sync API ──
+export const practiceAPI = {
+  sync: (notesId: string) =>
+    request<any>('/practice/sync', { method: 'POST', body: { notesId } }),
+  getPool: (notesId: string) =>
+    request<any>(`/practice/pool/${notesId}`),
+  saveResults: (data: { mode: string; notesId: string; score: number; streak: number; totalQuestions: number; correctAnswers: number; topicPerformance?: any[] }) =>
+    request<any>('/practice/results', { method: 'POST', body: data }),
+  clearCache: (notesId: string) =>
+    request<any>(`/practice/cache/${notesId}`, { method: 'DELETE' }),
+}
