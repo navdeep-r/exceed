@@ -1,102 +1,253 @@
-import { useState, useEffect, useRef } from 'react'
-import { doubtsAPI } from '../../api'
+import { useState } from 'react';
+import { ChatState, ChatSession, ChatMessage } from '../../types/assistant';
+import { Send, Mic, Book, CheckSquare, Settings2, Plus, Sparkles, BrainCircuit, FileText } from 'lucide-react';
 
-export default function StudentDoubts() {
-  const [doubts, setDoubts] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [question, setQuestion] = useState('')
-  const [isVoice, setIsVoice] = useState(false)
-  const [recording, setRecording] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const recognitionRef = useRef<any>(null)
-
-  useEffect(() => { doubtsAPI.listForStudent().then(setDoubts).catch(() => {}).finally(() => setLoading(false)) }, [])
-
-  const startVoice = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SR) return
-    const recognition = new SR()
-    recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-US'
-    recognition.onresult = (e: any) => {
-      let text = ''
-      for (let i = 0; i < e.results.length; i++) {
-        text += e.results[i][0].transcript
+export default function ChatPage() {
+  const [state, setState] = useState<ChatState>({
+    activeChatId: 'chat-1',
+    sessions: [
+      {
+        id: 'chat-1',
+        studentId: 'me',
+        title: 'Photosynthesis Review',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        selectedContext: { notesIds: ['note-1'], topics: [] },
+        messages: [
+          {
+            id: 'msg-1',
+            role: 'assistant',
+            content: 'Hello! I am your AI learning assistant. I see we are reviewing the notes on Photosynthesis. What would you like to clarify?',
+            timestamp: new Date().toISOString(),
+            contextSources: [
+              { type: 'note', title: 'Biology Chapter 4 - Energy', id: 'note-1' }
+            ]
+          },
+          {
+            id: 'msg-2',
+            role: 'user',
+            content: 'Can you explain the difference between the light-dependent and light-independent reactions?',
+            timestamp: new Date().toISOString()
+          },
+          {
+            id: 'msg-3',
+            role: 'assistant',
+            content: 'Absolutely! Here is a breakdown of the two phases:',
+            timestamp: new Date().toISOString(),
+            structuredResponse: {
+              answer: "The light-dependent reactions capture energy from sunlight to make ATP and NADPH, which act as batteries. The light-independent reactions (Calvin cycle) then use those 'batteries' to build sugar from carbon dioxide.",
+              keyPoints: [
+                "Light-dependent: Needs light, happens in thylakoids, produces ATP & NADPH.",
+                "Light-independent: Needs CO2, happens in stroma, produces glucose."
+              ],
+              example: "Think of the light-dependent reaction as charging a power bank using solar panels, and the light-independent reaction as using that power bank to run a 3D printer that prints sugar molecules."
+            }
+          }
+        ]
       }
-      setQuestion(text)
-    }
-    recognition.start(); recognitionRef.current = recognition; setRecording(true); setIsVoice(true)
-  }
+    ],
+    isLoading: false,
+    isRecording: false,
+    selectedContext: null
+  });
 
-  const stopVoice = () => {
-    recognitionRef.current?.stop(); setRecording(false)
-  }
+  const [input, setInput] = useState('');
 
-  const handleSubmit = async () => {
-    if (!question.trim()) return
-    setSubmitting(true)
-    try {
-      // Using a placeholder lectureId - in production this would be context-aware
-      const result = await doubtsAPI.submit({ lectureId: 'general', questionText: question, isVoice })
-      setDoubts(prev => [result, ...prev]); setQuestion(''); setIsVoice(false)
-    } catch {}
-    finally { setSubmitting(false) }
-  }
-
-  if (loading) return <div className="space-y-4">{[1,2,3].map(i => <div key={i} className="h-20 shimmer rounded-2xl" />)}</div>
+  const activeSession = state.sessions.find(s => s.id === state.activeChatId);
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-surface-50">💬 Ask a Doubt</h1>
-        <p className="text-surface-400 mt-1">Use voice or text to ask your teacher questions</p>
-      </div>
-
-      {/* Input */}
-      <div className="glass rounded-2xl p-6 space-y-4">
-        <textarea value={question} onChange={e => setQuestion(e.target.value)}
-          className="w-full h-28 px-4 py-3 rounded-xl bg-surface-800/80 border border-surface-600/50 text-surface-200 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-accent-500/50 resize-none text-sm"
-          placeholder="Type your question or use voice input…" />
-        <div className="flex items-center gap-3">
-          <button onClick={recording ? stopVoice : startVoice}
-            className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
-              recording ? 'bg-danger-500/20 text-danger-400 animate-recording' : 'bg-surface-700 text-surface-300 hover:bg-surface-600'
-            }`}>
-            {recording ? '⏹ Stop' : '🎙️ Voice'}
+    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-surface-950">
+      
+      {/* Left Sidebar: Chat History */}
+      <div className="w-64 border-r border-surface-800 bg-surface-900/30 flex flex-col hidden md:flex">
+        <div className="p-4 border-b border-surface-800">
+          <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-surface-200 text-sm font-medium transition-colors">
+            <Plus className="w-4 h-4" /> New Chat
           </button>
-          <button onClick={handleSubmit} disabled={submitting || !question.trim()}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-accent-600 to-primary-600 text-white text-sm font-semibold disabled:opacity-50 shadow-lg">
-            {submitting ? 'Sending…' : '📩 Submit'}
-          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 space-y-1 custom-scrollbar">
+          <p className="text-[10px] font-bold text-surface-500 uppercase tracking-wider mb-2 px-2 pt-2">Recent Chats</p>
+          {state.sessions.map(s => (
+            <button 
+              key={s.id}
+              className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                s.id === state.activeChatId 
+                  ? 'bg-primary-500/10 text-primary-300 border border-primary-500/20' 
+                  : 'text-surface-300 hover:bg-surface-800/50 border border-transparent'
+              }`}
+            >
+              <div className="truncate font-medium">{s.title}</div>
+              <div className="text-[10px] text-surface-500 mt-0.5">Today</div>
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* History */}
-      <div className="glass rounded-2xl p-6">
-        <h2 className="text-lg font-semibold text-surface-100 mb-4">Your Questions</h2>
-        {doubts.length === 0 ? (
-          <p className="text-surface-400 text-sm py-8 text-center">No questions yet</p>
-        ) : (
-          <div className="space-y-4">
-            {doubts.map(d => (
-              <div key={d.id} className="p-4 rounded-xl bg-surface-800/40 space-y-3">
-                <div className="flex items-start justify-between">
-                  <p className="text-sm text-surface-200">{d.question_text}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ml-3 shrink-0 ${d.status === 'answered' ? 'bg-success-500/15 text-success-400' : 'bg-warning-500/15 text-warning-400'}`}>
-                    {d.status}
-                  </span>
+      {/* Center: Chat Window */}
+      <div className="flex-1 flex flex-col relative">
+        {/* Chat Area */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {activeSession?.messages.map(msg => (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                
+                {/* Avatar */}
+                <div className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center border ${
+                  msg.role === 'user' 
+                    ? 'bg-surface-800 border-surface-700 text-surface-300' 
+                    : 'bg-gradient-to-br from-primary-500/20 to-accent-500/20 border-primary-500/30 text-primary-400'
+                }`}>
+                  {msg.role === 'user' ? 'S' : <Sparkles className="w-4 h-4" />}
                 </div>
-                {d.response && (
-                  <div className="p-3 rounded-lg bg-primary-500/10 border border-primary-500/20">
-                    <p className="text-xs text-primary-400 font-medium mb-1">Teacher's Response:</p>
-                    <p className="text-sm text-surface-300">{d.response}</p>
+
+                {/* Content Bubble */}
+                <div className="space-y-2">
+                  <div className={`p-4 rounded-2xl ${
+                    msg.role === 'user' 
+                      ? 'bg-surface-800 text-surface-100 rounded-tr-sm' 
+                      : 'bg-surface-900 border border-surface-800 text-surface-200 rounded-tl-sm shadow-sm'
+                  }`}>
+                    <p className="leading-relaxed text-[15px]">{msg.content}</p>
+
+                    {/* Structured Content for Assistant */}
+                    {msg.structuredResponse && (
+                      <div className="mt-4 space-y-4">
+                        <div className="text-[15px] leading-relaxed text-surface-300">
+                          {msg.structuredResponse.answer}
+                        </div>
+                        
+                        {msg.structuredResponse.keyPoints && (
+                          <div className="bg-surface-950/50 rounded-xl p-4 border border-surface-800/50">
+                            <h4 className="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                              <CheckSquare className="w-3.5 h-3.5" /> Key Takeaways
+                            </h4>
+                            <ul className="space-y-2">
+                              {msg.structuredResponse.keyPoints.map((kp, i) => (
+                                <li key={i} className="flex gap-2 text-sm text-surface-300">
+                                  <span className="text-primary-500 mt-0.5">•</span> {kp}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {msg.structuredResponse.example && (
+                          <div className="bg-accent-500/5 border border-accent-500/20 rounded-xl p-4">
+                            <h4 className="text-xs font-semibold text-accent-400/80 uppercase tracking-wider mb-2 flex items-center gap-2">
+                              💡 Analogy / Example
+                            </h4>
+                            <p className="text-sm text-accent-100/90 leading-relaxed">
+                              {msg.structuredResponse.example}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Quick Actions */}
+                        <div className="flex gap-2 pt-2">
+                          <button className="px-3 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-[11px] font-medium text-surface-300 transition-colors">
+                            Explain Simpler
+                          </button>
+                          <button className="px-3 py-1.5 rounded-lg bg-surface-800 hover:bg-surface-700 text-[11px] font-medium text-surface-300 transition-colors">
+                            Give Another Example
+                          </button>
+                          <button className="px-3 py-1.5 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 text-[11px] font-medium text-primary-400 transition-colors">
+                            Test Me on This
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-                <p className="text-xs text-surface-500">{new Date(d.submitted_at).toLocaleString()}</p>
+
+                  {/* Context Source Chip */}
+                  {msg.contextSources && msg.contextSources.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {msg.contextSources.map((src, i) => (
+                        <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-surface-800/50 border border-surface-700/50 text-[10px] text-surface-400">
+                          <FileText className="w-3 h-3 opacity-70" />
+                          <span>Source: {src.title}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
-            ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 bg-surface-950/80 backdrop-blur-md border-t border-surface-800 shrink-0">
+          <div className="max-w-3xl mx-auto relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-500/20 to-accent-500/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity" />
+            <div className="relative flex items-end gap-2 bg-surface-900 border border-surface-700 rounded-2xl p-2 shadow-sm group-focus-within:border-primary-500/50 transition-colors">
+              <button className="p-3 text-surface-400 hover:text-surface-200 hover:bg-surface-800 rounded-xl transition-colors shrink-0">
+                <Mic className="w-5 h-5" />
+              </button>
+              <textarea
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="Ask about your notes or request an explanation..."
+                className="w-full bg-transparent border-none focus:ring-0 text-surface-100 text-sm resize-none max-h-32 min-h-[44px] py-3 custom-scrollbar"
+                rows={1}
+              />
+              <button className="p-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl shadow-lg shadow-primary-500/25 transition-all shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="mt-2 text-center">
+              <span className="text-[10px] text-surface-500">AI can make mistakes. Verify important information with your notes.</span>
+            </div>
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Right Sidebar: Context Panel */}
+      <div className="w-72 border-l border-surface-800 bg-surface-900/30 flex flex-col hidden lg:flex">
+        <div className="p-4 border-b border-surface-800 flex items-center justify-between">
+          <h3 className="text-sm font-semibold text-surface-200 flex items-center gap-2">
+            <BrainCircuit className="w-4 h-4 text-primary-400" /> Active Context
+          </h3>
+          <button className="text-surface-400 hover:text-surface-200"><Settings2 className="w-4 h-4" /></button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+          {/* Notes Linked */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-bold text-surface-500 uppercase tracking-wider">Linked Notes</p>
+              <button className="text-[10px] text-primary-400 font-medium">Add</button>
+            </div>
+            <div className="space-y-2">
+              <div className="p-3 bg-surface-800/50 border border-surface-700 rounded-xl flex items-start gap-3">
+                <Book className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-medium text-surface-200 leading-tight">Biology Chapter 4 - Energy</p>
+                  <p className="text-[10px] text-surface-500 mt-1">Full access to transcripts & summary</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Weak Topics Integration */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-bold text-surface-500 uppercase tracking-wider">Known Weaknesses</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2.5 py-1 rounded-md bg-danger-500/10 border border-danger-500/20 text-[10px] text-danger-400">
+                Krebs Cycle Details
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-warning-500/10 border border-warning-500/20 text-[10px] text-warning-400">
+                Enzyme Kinetics
+              </span>
+            </div>
+            <p className="text-[10px] text-surface-500 mt-2 leading-relaxed">
+              The AI knows these are areas you struggle with and will provide extra care when explaining them.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-  )
+  );
 }
