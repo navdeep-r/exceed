@@ -1,48 +1,9 @@
 import { useState, useEffect } from 'react';
 import { PracticeMode, PracticeState, PracticeSession, PracticeQuestion } from '../../types/practice';
-import { Brain, Flame, Target, BookOpen, Clock, AlertTriangle, ChevronRight, CheckCircle2, RotateCcw, HelpCircle, Trophy } from 'lucide-react';
+import { Brain, Flame, Target, BookOpen, Clock, AlertTriangle, ChevronRight, CheckCircle2, RotateCcw, HelpCircle, Trophy, Gamepad2 } from 'lucide-react';
+import RunnerGame from './RunnerGame';
 
-// --- MOCK DATA ---
-const MOCK_WEAK_TOPICS = [
-  { id: '1', name: 'Krebs Cycle', strength: 30 },
-  { id: '2', name: 'Enzyme Kinetics', strength: 45 },
-  { id: '3', name: 'Cell Membrane', strength: 60 }
-];
-
-const MOCK_QUESTIONS: PracticeQuestion[] = [
-  {
-    id: 'q1',
-    type: 'mcq',
-    topicId: '1',
-    difficulty: 'intermediate',
-    content: 'Which molecule enters the Krebs cycle by combining with oxaloacetate?',
-    options: ['Pyruvate', 'Citrate', 'Acetyl-CoA', 'Alpha-ketoglutarate'],
-    correctAnswer: 'Acetyl-CoA',
-    explanation: 'Acetyl-CoA, a two-carbon molecule, combines with the four-carbon oxaloacetate to form the six-carbon citrate, initiating the cycle.',
-    hints: ['It is a 2-carbon molecule.', 'It is the direct product of the transition reaction from pyruvate.']
-  },
-  {
-    id: 'q2',
-    type: 'flashcard',
-    topicId: '2',
-    difficulty: 'beginner',
-    content: 'What is the Michaelis constant (Km)?',
-    correctAnswer: 'The substrate concentration at which the reaction rate is half of its maximum value (Vmax/2).',
-    explanation: 'Km indicates the affinity of the enzyme for its substrate. A lower Km means higher affinity.'
-  },
-  {
-    id: 'q3',
-    type: 'story_scenario',
-    topicId: '3',
-    difficulty: 'advanced',
-    storyContext: 'You are a doctor treating a patient with severe dehydration. You need to administer IV fluids.',
-    characterDialogue: 'Patient: "I feel incredibly dizzy and my mouth is completely dry. Please help."',
-    content: 'Which type of IV fluid should you administer to rehydrate the cells without causing them to burst?',
-    options: ['Hypertonic Saline (3%)', 'Isotonic Saline (0.9%)', 'Hypotonic Saline (0.45%)', 'Pure Water'],
-    correctAnswer: 'Isotonic Saline (0.9%)',
-    explanation: 'Isotonic fluid matches the osmolarity of blood plasma, allowing cells to rehydrate safely without massive water influx that could cause lysis.'
-  }
-];
+import { MOCK_WEAK_TOPICS, MOCK_QUESTIONS, MOCK_SESSIONS } from '../../data/mockData';
 
 export default function PracticePage() {
   const [state, setState] = useState<PracticeState>({
@@ -56,22 +17,47 @@ export default function PracticePage() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [showHint, setShowHint] = useState(false);
 
-  const startSession = (mode: PracticeMode) => {
+  // Setup Modal State
+  const [setupMode, setSetupMode] = useState<PracticeMode | null>(null);
+  const [configSource, setConfigSource] = useState<string>('all');
+  const [configCount, setConfigCount] = useState<number>(5);
+
+  const openSetup = (mode: PracticeMode) => {
+    setSetupMode(mode);
+  };
+
+  const startSession = () => {
+    if (!setupMode) return;
+    
+    // Filter questions based on selected source/session if needed
+    // For now we just filter by type and limit by count
+    let filteredQuestions = MOCK_QUESTIONS.filter(q => 
+      (setupMode === 'quiz' || setupMode === 'runner') ? q.type === 'mcq' 
+      : setupMode === 'flashcards' ? q.type === 'flashcard' 
+      : setupMode === 'story' ? q.type === 'story_scenario' : true
+    );
+
+    // If a specific session is selected, we'd normally filter by topic.
+    // For this mock, we just shuffle and slice to the selected configCount.
+    filteredQuestions = filteredQuestions.sort(() => Math.random() - 0.5).slice(0, configCount);
+
     setState(prev => ({
       ...prev,
-      currentMode: mode,
+      currentMode: setupMode,
       activeSession: {
         id: `sess-${Date.now()}`,
-        mode,
-        questions: MOCK_QUESTIONS.filter(q => mode === 'quiz' ? q.type === 'mcq' : mode === 'flashcards' ? q.type === 'flashcard' : mode === 'story' ? q.type === 'story_scenario' : true),
+        mode: setupMode,
+        questions: filteredQuestions,
         currentQuestionIndex: 0,
         score: 0,
         streak: 0,
         startTime: new Date().toISOString(),
         completed: false,
-        timeRemainingMs: mode === 'challenge' ? 60000 : undefined
+        timeRemainingMs: setupMode === 'challenge' ? 60000 : undefined
       }
     }));
+    
+    setSetupMode(null);
   };
 
   const endSession = () => {
@@ -133,31 +119,37 @@ export default function PracticePage() {
         icon={<Brain className="w-6 h-6 text-primary-400" />} 
         title="Classic Quiz" 
         desc="Standard multiple choice questions tailored to your level." 
-        onClick={() => startSession('quiz')} 
+        onClick={() => openSetup('quiz')} 
       />
       <ModeCard 
         icon={<BookOpen className="w-6 h-6 text-accent-400" />} 
         title="Flashcards" 
         desc="Active recall practice for definitions and core concepts." 
-        onClick={() => startSession('flashcards')} 
+        onClick={() => openSetup('flashcards')} 
       />
       <ModeCard 
         icon={<BookOpen className="w-6 h-6 text-emerald-400" />} 
         title="Story Mode" 
         desc="Apply knowledge in realistic, scenario-based challenges." 
-        onClick={() => startSession('story')} 
+        onClick={() => openSetup('story')} 
       />
       <ModeCard 
         icon={<Clock className="w-6 h-6 text-amber-400" />} 
         title="Challenge Mode" 
         desc="Beat the clock. Rapid fire questions to test recall speed." 
-        onClick={() => startSession('challenge')} 
+        onClick={() => openSetup('challenge')} 
       />
       <ModeCard 
         icon={<AlertTriangle className="w-6 h-6 text-danger-400" />} 
         title="Weak Areas" 
         desc="Targeted practice focusing solely on topics you struggle with." 
-        onClick={() => startSession('weak_areas')} 
+        onClick={() => openSetup('weak_areas')} 
+      />
+      <ModeCard 
+        icon={<Gamepad2 className="w-6 h-6 text-fuchsia-400" />} 
+        title="Runner Game" 
+        desc="Subway Surfers-style lane game to test your recall speed." 
+        onClick={() => openSetup('runner')} 
       />
     </div>
   );
@@ -196,6 +188,68 @@ export default function PracticePage() {
             ))}
           </div>
         </div>
+
+        {/* Setup Modal */}
+        {setupMode && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-surface-900 border border-surface-800 rounded-2xl w-full max-w-md p-8 shadow-2xl">
+              <h2 className="text-2xl font-bold text-surface-50 mb-6 capitalize">{setupMode.replace('_', ' ')} Setup</h2>
+              
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-surface-300 mb-2">Source Material</label>
+                  <select 
+                    value={configSource}
+                    onChange={(e) => setConfigSource(e.target.value)}
+                    className="w-full bg-surface-950 border border-surface-700 rounded-xl px-4 py-3 text-surface-100 focus:outline-none focus:border-primary-500 transition-colors"
+                  >
+                    <option value="all">All Available Topics (Mixed)</option>
+                    <option value="weak">Focus: Weak Areas Only</option>
+                    <optgroup label="Recent Sessions">
+                      {MOCK_SESSIONS.map(s => (
+                        <option key={s.id} value={s.id}>{s.title}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="text-sm font-medium text-surface-300">Number of Questions</label>
+                    <span className="text-primary-400 font-bold">{configCount}</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="3" max="20" step="1"
+                    value={configCount}
+                    onChange={(e) => setConfigCount(parseInt(e.target.value))}
+                    className="w-full accent-primary-500"
+                  />
+                  <div className="flex justify-between text-xs text-surface-500 mt-2">
+                    <span>Quick (3)</span>
+                    <span>Standard (10)</span>
+                    <span>Deep Dive (20)</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex gap-4">
+                <button 
+                  onClick={() => setSetupMode(null)}
+                  className="flex-1 py-3 bg-surface-800 hover:bg-surface-700 text-surface-200 font-medium rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={startSession}
+                  className="flex-1 py-3 bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-xl transition-colors shadow-lg shadow-primary-500/20"
+                >
+                  Start Run
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -233,7 +287,21 @@ export default function PracticePage() {
   }
 
   const currentQ = activeSession.questions[activeSession.currentQuestionIndex];
-  const isCorrect = selectedAnswer === currentQ.correctAnswer;
+  const isCorrect = selectedAnswer === currentQ?.correctAnswer;
+
+  if (activeSession.mode === 'runner') {
+    return (
+      <RunnerGame 
+        questions={activeSession.questions} 
+        onEndSession={(score, streak) => {
+          setState(prev => ({
+            ...prev,
+            activeSession: { ...prev.activeSession!, score, streak, completed: true }
+          }));
+        }} 
+      />
+    );
+  }
 
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-surface-950">

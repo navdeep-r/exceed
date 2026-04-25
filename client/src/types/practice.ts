@@ -1,4 +1,4 @@
-export type PracticeMode = 'quiz' | 'flashcards' | 'story' | 'challenge' | 'weak_areas';
+export type PracticeMode = 'quiz' | 'flashcards' | 'story' | 'challenge' | 'weak_areas' | 'runner';
 export type QuestionDifficulty = 'beginner' | 'intermediate' | 'advanced';
 
 export interface PracticeQuestion {
