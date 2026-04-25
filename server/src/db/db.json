@@ -18,7 +18,7 @@
       "first_name": "Alex",
       "last_name": "Johnson",
       "created_at": "2026-04-25T19:23:43.146Z",
-      "last_login": null
+      "last_login": "2026-04-25T19:49:16.229Z"
     },
     {
       "id": "e3edcb15-3f34-4ad0-b45b-917e88fea47e",
@@ -61,6 +61,26 @@
       "recorded_at": "2026-04-25T19:23:43.146Z",
       "duration": 1800,
       "status": "completed"
+    },
+    {
+      "teacher_id": "eab24328-907b-4878-910c-3690746214ce",
+      "title": "[CS101] TEST",
+      "audio_file_path": null,
+      "transcript": "",
+      "recorded_at": "2026-04-25T19:29:11.125Z",
+      "duration": 0,
+      "status": "completed",
+      "id": "8441aa91-6c5e-4484-b24c-4314e25e8425"
+    },
+    {
+      "teacher_id": "9148c4f3-9ad2-4ed6-9cf1-848fa24b348a",
+      "title": "101",
+      "audio_file_path": null,
+      "transcript": "Alright class, let's get started. Today we are going to dive into Neural Networks. hello sir today will be discussing about compounds and mixtures so compound is a collection of element and mixtures mixture of mixture s by",
+      "recorded_at": "2026-04-25T19:41:25.656Z",
+      "duration": 0,
+      "status": "completed",
+      "id": "9d6d60ac-4948-44c5-b14d-d5576e528a26"
     }
   ],
   "notes": [
@@ -89,6 +109,45 @@
       "published_at": "2026-04-25T19:23:43.146Z",
       "version": 1,
       "created_at": "2026-04-25T19:23:43.146Z"
+    },
+    {
+      "lecture_id": "8441aa91-6c5e-4484-b24c-4314e25e8425",
+      "teacher_id": "eab24328-907b-4878-910c-3690746214ce",
+      "title": "[CS101] TEST",
+      "content": "# [CS101] TEST\n\n## Overview\n.\n\n## Key Concepts\n- No key concepts identified.\n\n## Summary\nThis lecture covered the fundamentals of [cs101] test.",
+      "language": "en",
+      "is_original": true,
+      "parent_notes_id": null,
+      "published_at": null,
+      "version": 1,
+      "created_at": "2026-04-25T19:29:11.218Z",
+      "id": "15bbc180-d56a-41bf-932d-9c8d8fec3d06"
+    },
+    {
+      "lecture_id": "9d6d60ac-4948-44c5-b14d-d5576e528a26",
+      "teacher_id": "9148c4f3-9ad2-4ed6-9cf1-848fa24b348a",
+      "title": "101",
+      "content": "# 101\n\n## Overview\nAlright class, let's get started.  Today we are going to dive into Neural Networks.\n\n## Key Concepts\n- hello sir today will be discussing about compounds and mixtures so compound is a collection of element and mixtures mixture of mixture s by\n\n## Summary\nThis lecture covered the fundamentals of 101.",
+      "language": "en",
+      "is_original": true,
+      "parent_notes_id": null,
+      "published_at": "2026-04-25T19:48:54.149Z",
+      "version": 1,
+      "created_at": "2026-04-25T19:41:25.707Z",
+      "id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835"
+    },
+    {
+      "lecture_id": "9d6d60ac-4948-44c5-b14d-d5576e528a26",
+      "teacher_id": "9148c4f3-9ad2-4ed6-9cf1-848fa24b348a",
+      "title": "101",
+      "content": "[Translated to fr]\n\n# 101\n\n## Overview\nAlright class, let's get started.  Today we are going to dive into Neural Networks.\n\n## Key Concepts\n- hello sir today will be discussing about compounds and mixtures so compound is a collection of element and mixtures mixture of mixture s by\n\n## Summary\nThis lecture covered the fundamentals of 101.",
+      "language": "fr",
+      "is_original": false,
+      "parent_notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "published_at": "2026-04-25T19:41:25.718Z",
+      "version": 1,
+      "created_at": "2026-04-25T19:41:51.279Z",
+      "id": "c0cf6c00-5b7b-479c-8726-fd6bf466a182"
     }
   ],
   "quizzes": [
@@ -385,8 +444,57 @@
   "attempt_logs": [],
   "concept_mastery": [],
   "study_streaks": [],
-  "classes": [],
-  "class_members": [],
-  "class_sessions": [],
+  "classes": [
+    {
+      "name": "CS101",
+      "teacher_id": "eab24328-907b-4878-910c-3690746214ce",
+      "join_code": "FVLNK1",
+      "created_at": "2026-04-25T19:28:19.049Z",
+      "id": "3a19433a-c3cb-44b8-a3b1-6f6921570d82"
+    },
+    {
+      "name": "CS101",
+      "teacher_id": "9148c4f3-9ad2-4ed6-9cf1-848fa24b348a",
+      "join_code": "LTSSQB",
+      "created_at": "2026-04-25T19:40:56.312Z",
+      "id": "d255ed4d-a209-4556-831f-8944d7c449a5"
+    }
+  ],
+  "class_members": [
+    {
+      "class_id": "3a19433a-c3cb-44b8-a3b1-6f6921570d82",
+      "user_id": "eab24328-907b-4878-910c-3690746214ce",
+      "role": "teacher",
+      "joined_at": "2026-04-25T19:28:19.052Z",
+      "id": "e7d00143-eb21-4096-98ae-5f1006e1e143"
+    },
+    {
+      "class_id": "d255ed4d-a209-4556-831f-8944d7c449a5",
+      "user_id": "9148c4f3-9ad2-4ed6-9cf1-848fa24b348a",
+      "role": "teacher",
+      "joined_at": "2026-04-25T19:40:56.314Z",
+      "id": "2eb58d33-930f-42ea-b3e3-f41462bddc99"
+    },
+    {
+      "class_id": "d255ed4d-a209-4556-831f-8944d7c449a5",
+      "user_id": "886ae87e-be5b-424c-ae94-bed49e7cad5f",
+      "role": "student",
+      "joined_at": "2026-04-25T19:49:24.209Z",
+      "id": "3ff466bf-2f08-4fd9-b043-6cc19459a393"
+    }
+  ],
+  "class_sessions": [
+    {
+      "class_id": "d255ed4d-a209-4556-831f-8944d7c449a5",
+      "notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "lecture_id": "9d6d60ac-4948-44c5-b14d-d5576e528a26",
+      "title": "101",
+      "description": "Auto-generated from recorded lecture",
+      "date": "2026-04-25T19:48:54.152Z",
+      "status": "active",
+      "created_at": "2026-04-25T19:48:54.152Z",
+      "id": "885832fb-d69e-4e38-8b14-e4d34b6ac1b0"
+    }
+  ],
   "class_content": []
 }

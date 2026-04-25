@@ -3,13 +3,15 @@ import { aiAPI } from '../../api';
 import { 
   Brain, ChevronRight, CheckCircle2, RotateCcw, AlertCircle, 
   Sparkles, Loader2, Volume2, Send, Settings2, FileText, UserCircle2,
-  Clock, Plus, Upload, Trash2, Search, BookOpen, GraduationCap
+  Clock, Upload, Trash2, Search, BookOpen, GraduationCap, Mic, Zap
 } from 'lucide-react';
 import { MOCK_SESSIONS, TOPIC_STEPS, LESSON_OUTLINE } from '../../data/mockData';
+import VoiceMode from './VoiceMode';
 
 
 
 export default function TutorSessionPage() {
+  const [showVoiceMode, setShowVoiceMode] = useState(false);
   // Main view state
   const [viewMode, setViewMode] = useState<'dashboard' | 'session'>('dashboard');
   const [sessions, setSessions] = useState(MOCK_SESSIONS);
@@ -166,6 +168,8 @@ export default function TutorSessionPage() {
 
   if (viewMode === 'dashboard') {
     return (
+      <>
+      {showVoiceMode && <VoiceMode onClose={() => setShowVoiceMode(false)} />}
       <div className="flex flex-col h-[calc(100vh-64px)] overflow-y-auto bg-surface-950 p-8 custom-scrollbar">
         <div className="max-w-6xl mx-auto w-full space-y-10">
           
@@ -189,10 +193,57 @@ export default function TutorSessionPage() {
               <button 
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-medium transition-colors w-full md:w-auto disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-surface-800 hover:bg-surface-700 text-surface-200 rounded-xl font-medium transition-colors w-full md:w-auto disabled:opacity-50 border border-surface-700"
               >
                 {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5" />}
-                Upload PDF to Learn
+                Upload PDF
+              </button>
+            </div>
+          </div>
+
+          {/* ── Voice Mode Hero Card ── */}
+          <div
+            className="relative rounded-2xl overflow-hidden cursor-pointer group"
+            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)' }}
+            onClick={() => setShowVoiceMode(true)}
+          >
+            {/* Animated background glow */}
+            <div className="absolute inset-0 opacity-30">
+              <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-indigo-600 blur-3xl animate-pulse" style={{ animationDuration: '3s' }} />
+              <div className="absolute top-1/2 right-1/4 translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-violet-600 blur-3xl animate-pulse" style={{ animationDuration: '4s', animationDelay: '1s' }} />
+            </div>
+            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 p-8">
+              <div className="flex items-center gap-6">
+                <div className="relative shrink-0">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-2xl shadow-indigo-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <Mic className="w-9 h-9 text-white" />
+                  </div>
+                  <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-indigo-500" />
+                  </span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-semibold text-indigo-300 uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 border border-indigo-500/30">New</span>
+                    <span className="text-xs text-white/40">Powered by ElevenLabs + AI</span>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-1">Voice Mode</h2>
+                  <p className="text-white/60 text-sm max-w-md">
+                    Talk to your AI tutor naturally. Ask questions, get spoken answers, and learn hands-free with a live avatar.
+                  </p>
+                  <div className="flex items-center gap-4 mt-3">
+                    {['Speech-to-text', 'AI answers', 'ElevenLabs voice', 'Live avatar'].map(f => (
+                      <span key={f} className="flex items-center gap-1 text-xs text-indigo-300">
+                        <Zap className="w-3 h-3" />{f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <button className="shrink-0 flex items-center gap-2 px-7 py-3.5 rounded-xl bg-white text-indigo-900 font-bold text-sm shadow-xl group-hover:scale-105 transition-transform duration-300">
+                <Mic className="w-4 h-4" />
+                Enter Voice Mode
               </button>
             </div>
           </div>
@@ -267,6 +318,7 @@ export default function TutorSessionPage() {
           </div>
         </div>
       </div>
+      </>
     );
   }
 
@@ -286,6 +338,13 @@ export default function TutorSessionPage() {
   }
 
   return (
+    <>
+    {showVoiceMode && (
+      <VoiceMode
+        onClose={() => setShowVoiceMode(false)}
+        contextLabel={activeSession.title}
+      />
+    )}
     <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-surface-950">
       
       {/* LEFT PANEL: Lesson Outline */}
@@ -496,6 +555,14 @@ export default function TutorSessionPage() {
             >
               <UserCircle2 className="w-5 h-5" />
             </button>
+            {/* Voice Mode button */}
+            <button
+              onClick={() => setShowVoiceMode(true)}
+              className="p-3 rounded-xl transition-colors bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 border border-indigo-500/30"
+              title="Switch to Voice Mode"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
           </div>
 
           <div className="flex gap-3">
@@ -573,5 +640,6 @@ export default function TutorSessionPage() {
       </div>
 
     </div>
+    </>
   );
 }

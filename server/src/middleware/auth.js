@@ -11,6 +11,15 @@ function authMiddleware(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Validate that the user actually exists in the database
+    // This prevents old JWT tokens from passing if the database was wiped
+    const { findOne } = require('../db/memory-store');
+    const userExists = findOne('users', u => u.id === decoded.id);
+    if (!userExists) {
+      return res.status(401).json({ message: 'User no longer exists. Please log in again.' });
+    }
+
     req.user = decoded;
     next();
   } catch (err) {

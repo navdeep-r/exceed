@@ -58,17 +58,8 @@ export const lecturesAPI = {
   },
   list: () => request<any[]>('/lectures'),
   get: (id: string) => request<any>(`/lectures/${id}`),
-  transcribe: (id: string, data: { transcript?: string; audioBlob?: Blob }) => {
-    const formData = new FormData()
-    if (data.transcript) formData.append('transcript', data.transcript)
-    if (data.audioBlob) formData.append('audio', data.audioBlob, 'recording.webm')
-    const token = localStorage.getItem('exceed_token')
-    return fetch(`${API_BASE}/lectures/${id}/transcribe`, {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    }).then(r => r.json())
-  },
+  transcribe: (id: string, transcript: string) =>
+    request<any>(`/lectures/${id}/transcribe`, { method: 'POST', body: { transcript } }),
 }
 
 // ── Notes API ──
@@ -103,6 +94,7 @@ export const quizAPI = {
 // ── Flashcards API ──
 export const flashcardsAPI = {
   getByNotes: (notesId: string) => request<any[]>(`/flashcards/notes/${notesId}`),
+  generate: (notesId: string) => request<any[]>(`/flashcards/notes/${notesId}/generate`, { method: 'POST' }),
   markReviewed: (id: string) =>
     request<any>(`/flashcards/${id}/review`, { method: 'POST' }),
 }
@@ -168,6 +160,8 @@ export const aiAPI = {
     request<any>('/ai/generate-tutor', { method: 'POST', body: { docId } }),
   chat: (message: string, docId?: string) =>
     request<any>('/ai/chat', { method: 'POST', body: { message, docId } }),
+  voiceChat: (message: string, history: { role: string; content: string }[] = [], context?: string) =>
+    request<{ answer: string }>('/ai/voice-chat', { method: 'POST', body: { message, history, context } }),
   tts: (text: string) => {
     const token = localStorage.getItem('exceed_token')
     return fetch(`${API_BASE}/ai/tts`, {

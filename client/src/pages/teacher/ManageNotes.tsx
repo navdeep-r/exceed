@@ -171,7 +171,7 @@ export default function ManageNotes() {
                 <FileText size={24} className="text-blue-400" />
               </div>
               <p className="text-base text-gray-300 font-medium">No notes yet</p>
-              <p className="text-sm text-gray- mt-1">Record a lecture and refine the transcript</p>
+              <p className="text-sm text-gray-400 mt-1">Record a lecture and refine the transcript</p>
             </div>
           ) : (
             (activeTab === 'published' ? filteredNotes.filter((n: any) => n.published_at) : filteredNotes).map((n: any, i: number) => (

@@ -8,6 +8,7 @@ import {
   Wifi, ShieldCheck, Search, LayoutList, Share2, X, FileText, BrainCircuit,
   CreditCard, HelpCircle
 } from 'lucide-react'
+import VoiceMode from './VoiceMode'
 
 export default function RecordLecture() {
   const navigate = useNavigate()
@@ -39,13 +40,10 @@ export default function RecordLecture() {
   const [topics, setTopics] = useState<{title: string, duration: string}[]>([])
   const [alerts, setAlerts] = useState<string[]>([])
   
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const timeRef = useRef(0)
   const recognitionRef = useRef<any>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<BlobPart[]>([])
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const waveformIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const waveformIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const [waveformBars, setWaveformBars] = useState<number[]>(Array(40).fill(10))
 
   // Initialize Speech Recognition
@@ -131,14 +129,6 @@ export default function RecordLecture() {
       }
     } else if (status === 'paused') {
       setWaveformBars(Array(40).fill(10))
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.pause()
-      }
-    } else if (status === 'stopped') {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop()
-        mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop())
-      }
     }
   }, [status])
 
@@ -151,37 +141,12 @@ export default function RecordLecture() {
 
   const canStart = title.trim() !== ''
 
-  const handleStart = async () => {
+  const handleStart = () => {
     if (!canStart) {
       alert('Please enter a lecture title and select a subject before starting.')
       return
     }
-    
-    try {
-      if (!mediaRecorderRef.current) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        const mediaRecorder = new MediaRecorder(stream)
-        audioChunksRef.current = []
-        mediaRecorder.ondataavailable = e => {
-          if (e.data.size > 0) audioChunksRef.current.push(e.data)
-        }
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' })
-          setAudioBlob(blob)
-        }
-        mediaRecorderRef.current = mediaRecorder
-      }
-      
-      if (mediaRecorderRef.current.state === 'inactive') {
-        mediaRecorderRef.current.start()
-      } else if (mediaRecorderRef.current.state === 'paused') {
-        mediaRecorderRef.current.resume()
-      }
-      setStatus('recording')
-    } catch (err) {
-      console.error('Microphone access denied:', err)
-      alert('Microphone access is required to record a lecture.')
-    }
+    setStatus('recording')
   }
   const handlePause = () => setStatus('paused')
   const handleStop = () => {
@@ -211,19 +176,9 @@ export default function RecordLecture() {
       const lecture = await lectureRes.json()
 
       const fullText = transcript.map(t => t.text).join(' ')
-      
-      let finalBlob = audioBlob;
-      if (!finalBlob && audioChunksRef.current.length > 0) {
-        finalBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-      }
+      await lecturesAPI.transcribe(lecture.id, fullText)
 
-      // Send audioBlob to use ElevenLabs Batch API; falls back to real-time fullText if missing
-      const transcribedLecture = await lecturesAPI.transcribe(lecture.id, { 
-        transcript: fullText, 
-        audioBlob: finalBlob 
-      })
-
-      const notesRes = await notesAPI.refine(lecture.id, transcribedLecture.transcript)
+      const notesRes = await notesAPI.refine(lecture.id, fullText)
       
       if (!notesRes || !notesRes.id) throw new Error('Failed to generate notes')
 

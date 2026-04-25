@@ -201,6 +201,68 @@ Do NOT wrap the response in markdown code blocks. Just output raw valid JSON arr
   }
 });
 
+// POST /api/ai/voice-chat
+// Conversational AI for voice tutor — returns plain text answer for TTS
+router.post('/voice-chat', async (req, res) => {
+  try {
+    const { message, history = [], context } = req.body;
+
+    const apiKey = process.env.FEATHERLESS_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ message: 'Featherless API key missing' });
+    }
+
+    const contextBlock = context
+      ? `\n\nThe student is currently studying the following notes — base your answers on this material:\n---\n${context.substring(0, 5000)}\n---\nIf the question relates to this content, answer from it directly. If it is unrelated, answer from your general knowledge.`
+      : '';
+
+    const systemPrompt = `You are Exceed, a knowledgeable AI tutor having a spoken conversation with a student.
+
+Rules you MUST follow:
+1. Answer DIRECTLY and ACCURATELY — do not make up facts.
+2. Keep answers to 3-5 natural spoken sentences. No lists, no markdown, no bullet points.
+3. Use simple, clear language suitable for text-to-speech — avoid symbols like *, #, >, etc.
+4. If you don't know something, say so honestly and briefly.
+5. Stay focused on what was asked — don't pad with unnecessary information.
+6. Sound like a real teacher talking, not a textbook.${contextBlock}`;
+
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...history.slice(-8).map((h) => ({ role: h.role, content: h.content })),
+      { role: 'user', content: message },
+    ];
+
+    const response = await fetch('https://api.featherless.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'Qwen/Qwen2.5-7B-Instruct',
+        messages,
+        temperature: 0.3,
+        max_tokens: 300,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error('Featherless voice-chat error:', errText);
+      return res.status(response.status).json({ message: 'AI request failed' });
+    }
+
+    const data = await response.json();
+    const answer = data.choices[0].message.content.trim()
+      .replace(/\*\*/g, '').replace(/\*/g, '').replace(/#+/g, '').replace(/`/g, '');
+
+    res.json({ answer });
+  } catch (err) {
+    console.error('voice-chat error:', err);
+    res.status(500).json({ message: 'Voice chat failed' });
+  }
+});
+
 // POST /api/ai/tts
 // Convert text to speech using ElevenLabs
 router.post('/tts', async (req, res) => {
@@ -224,7 +286,7 @@ router.post('/tts', async (req, res) => {
       },
       body: JSON.stringify({
         text,
-        model_id: 'eleven_monolingual_v1',
+        model_id: 'eleven_flash_v2_5',
         voice_settings: { stability: 0.5, similarity_boost: 0.5 }
       })
     });

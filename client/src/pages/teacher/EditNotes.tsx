@@ -21,7 +21,8 @@ import {
   Plus,
   Trash2,
   GripVertical,
-  AlertCircle
+  AlertCircle,
+  Edit3
 } from 'lucide-react'
 
 const LANGUAGES = [
@@ -287,7 +288,7 @@ export default function EditNotes() {
             <Languages size={16} className="text-blue-400" />
             <h2 className="text-base font-semibold text-white">Translate Notes</h2>
           </div>
-          <p className="text-sm text-gray- mb-4">Select target languages for translation. Original: {notes.language?.toUpperCase() || 'EN'}</p>
+          <p className="text-sm text-gray-400 mb-4">Select target languages for translation. Original: {notes.language?.toUpperCase() || 'EN'}</p>
           <div className="flex flex-wrap gap-2 mb-5">
             {LANGUAGES.filter(l => l.code !== notes.language).map(lang => (
               <button key={lang.code} onClick={() => toggleLang(lang.code)}
@@ -351,7 +352,7 @@ export default function EditNotes() {
                 </div>
               </div>
               <p className="text-sm text-gray-200 font-medium mb-2">Q: {fc.q}</p>
-              <p className="text-sm text-gray-">A: {fc.a}</p>
+              <p className="text-sm text-gray-400">A: {fc.a}</p>
             </motion.div>
           ))}
         </div>
