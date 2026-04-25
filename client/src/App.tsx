@@ -30,6 +30,7 @@ import TutorSessionPage from './pages/student/Tutor'
 import MyClassesPage from './pages/student/MyClasses'
 import QueryToTutor from './pages/student/QueryToTutor'
 import TutorQueries from './pages/teacher/TutorQueries'
+import LeaderboardPage from './pages/student/Leaderboard'
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode; role: 'teacher' | 'student' }) {
   const { user, loading } = useAuth()
@@ -94,6 +95,7 @@ export default function App() {
         <Route path="tutor" element={<TutorSessionPage />} />
         <Route path="classes" element={<MyClassesPage />} />
         <Route path="queries" element={<QueryToTutor />} />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
