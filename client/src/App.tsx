@@ -24,11 +24,12 @@ import NotesViewPage from './pages/student/NotesView'
 import PracticePage from './pages/student/Practice'
 import QuizPlayPage from './pages/student/QuizPlay'
 import FlashcardsPage from './pages/student/Flashcards'
-import PlannerPage from './pages/student/Planner'
 import StudyPlanPage from './pages/student/StudyPlan'
 import StudentDoubts from './pages/student/Doubts'
 import TutorSessionPage from './pages/student/Tutor'
 import MyClassesPage from './pages/student/MyClasses'
+import QueryToTutor from './pages/student/QueryToTutor'
+import TutorQueries from './pages/teacher/TutorQueries'
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode; role: 'teacher' | 'student' }) {
   const { user, loading } = useAuth()
@@ -77,6 +78,7 @@ export default function App() {
 
         <Route path="settings" element={<Settings />} />
         <Route path="classes" element={<TeacherClasses />} />
+        <Route path="queries" element={<TutorQueries />} />
       </Route>
 
       {/* Student routes */}
@@ -87,11 +89,11 @@ export default function App() {
         <Route path="quiz" element={<PracticePage />} />
         <Route path="quiz/:id" element={<QuizPlayPage />} />
         <Route path="flashcards/:notesId" element={<FlashcardsPage />} />
-        <Route path="planner" element={<PlannerPage />} />
         <Route path="plan" element={<StudyPlanPage />} />
         <Route path="doubts" element={<StudentDoubts />} />
         <Route path="tutor" element={<TutorSessionPage />} />
         <Route path="classes" element={<MyClassesPage />} />
+        <Route path="queries" element={<QueryToTutor />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

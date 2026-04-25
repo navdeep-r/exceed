@@ -1,8 +1,8 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { 
-  Home, Folders, Calendar, ClipboardList, MessageSquare, UserPlus, 
-  Mic, Brain, PlaySquare, Download, Trophy, Medal, Settings, Search, Bell, GraduationCap
+  Home, Folders, ClipboardList, MessageSquare, UserPlus, 
+  Brain, Download, Trophy, Medal, Settings, Search, Bell, GraduationCap, HelpCircle
 } from 'lucide-react'
 
 export default function StudentLayout() {
@@ -42,7 +42,6 @@ export default function StudentLayout() {
           <nav className="px-3 space-y-0.5">
             <NavItem to="/student" icon={Home} label="Home" end />
             <NavItem to="/student/notes" icon={Folders} label="My Sets" />
-            <NavItem to="/student/planner" icon={Calendar} label="Calendar" />
             <NavItem to="/student/plan" icon={ClipboardList} label="Study Plan" />
             <NavItem to="/student/classes" icon={GraduationCap} label="My Classes" />
           </nav>
@@ -53,9 +52,8 @@ export default function StudentLayout() {
           <nav className="px-3 space-y-0.5">
             <NavItem to="/student/doubts" icon={MessageSquare} label="Chat" />
             <NavItem to="/student/tutor" icon={UserPlus} label="Tutor Me" />
-
+            <NavItem to="/student/queries" icon={HelpCircle} label="Ask Tutor" />
             <NavItem to="/student/quiz" icon={Brain} label="Practice" />
-            <NavItem to="/student/media" icon={PlaySquare} label="Audio & Video" />
           </nav>
 
           <div className="px-5 mt-6 mb-2">

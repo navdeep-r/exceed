@@ -8,7 +8,7 @@
       "first_name": "Dr. Sarah",
       "last_name": "Chen",
       "created_at": "2026-04-25T19:23:43.145Z",
-      "last_login": null
+      "last_login": "2026-04-25T21:17:45.525Z"
     },
     {
       "id": "886ae87e-be5b-424c-ae94-bed49e7cad5f",
@@ -18,7 +18,7 @@
       "first_name": "Alex",
       "last_name": "Johnson",
       "created_at": "2026-04-25T19:23:43.146Z",
-      "last_login": "2026-04-25T19:49:16.229Z"
+      "last_login": "2026-04-25T21:18:20.982Z"
     },
     {
       "id": "e3edcb15-3f34-4ad0-b45b-917e88fea47e",
@@ -323,6 +323,38 @@
       "back": "A graph where edges have direction, meaning they go from one vertex to another.",
       "reviewed": false,
       "created_at": "2026-04-25T19:23:43.146Z"
+    },
+    {
+      "notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "front": "Explain: \"hello sir today will be discussing about compounds and mixtu...\"",
+      "back": "hello sir today will be discussing about compounds and mixtures so compound is a collection of element and mixtures mixture of mixture s by",
+      "reviewed": true,
+      "created_at": "2026-04-25T21:01:16.341Z",
+      "id": "e04d1633-ed68-414a-b5ee-944175fc5be5"
+    },
+    {
+      "notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "front": "What is the main topic of \"Overview\"?",
+      "back": "This section covers key concepts related to: Overview",
+      "reviewed": false,
+      "created_at": "2026-04-25T21:01:16.349Z",
+      "id": "3e7a5250-1ddc-45a3-be1f-6dc74593342a"
+    },
+    {
+      "notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "front": "What is the main topic of \"Key Concepts\"?",
+      "back": "This section covers key concepts related to: Key Concepts",
+      "reviewed": false,
+      "created_at": "2026-04-25T21:01:16.350Z",
+      "id": "4d64f67b-ea91-4275-a00d-e3505639e2e4"
+    },
+    {
+      "notes_id": "1a2ab89d-52e6-4864-b77c-5e1228d1c835",
+      "front": "What is the main topic of \"Summary\"?",
+      "back": "This section covers key concepts related to: Summary",
+      "reviewed": false,
+      "created_at": "2026-04-25T21:01:16.351Z",
+      "id": "b98e1cae-19a2-4a60-aa50-66ad4eb2e42d"
     }
   ],
   "planner_activities": [
@@ -496,5 +528,7 @@
       "id": "885832fb-d69e-4e38-8b14-e4d34b6ac1b0"
     }
   ],
-  "class_content": []
+  "class_content": [],
+  "queries": [],
+  "query_replies": []
 }

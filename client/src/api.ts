@@ -160,15 +160,12 @@ export const aiAPI = {
     request<any>('/ai/generate-tutor', { method: 'POST', body: { docId } }),
   chat: (message: string, docId?: string) =>
     request<any>('/ai/chat', { method: 'POST', body: { message, docId } }),
-<<<<<<< HEAD
   generateStoryMap: (docId: string) =>
     request<any>('/ai/generate-story-map', { method: 'POST', body: { docId } }),
   evaluateAnswer: (docId: string, question: string, userAnswer: string) =>
     request<any>('/ai/evaluate-answer', { method: 'POST', body: { docId, question, userAnswer } }),
-=======
   voiceChat: (message: string, history: { role: string; content: string }[] = [], context?: string) =>
     request<{ answer: string }>('/ai/voice-chat', { method: 'POST', body: { message, history, context } }),
->>>>>>> 8e2d753127a62f98041bdfb19a7f0da9f6517537
   tts: (text: string) => {
     const token = localStorage.getItem('exceed_token')
     return fetch(`${API_BASE}/ai/tts`, {
@@ -232,4 +229,24 @@ export const classesAPI = {
     request<any>(`/classes/${id}/analytics`),
   getStudents: (id: string) =>
     request<any[]>(`/classes/${id}/students`),
+}
+
+// ── Queries API ──
+export const queriesAPI = {
+  create: (data: { title: string; body: string; subject?: string; class_id?: string; priority?: string }) =>
+    request<any>('/queries', { method: 'POST', body: data }),
+  myQueries: () =>
+    request<any[]>('/queries/student'),
+  allQueries: (params?: { status?: string; subject?: string }) => {
+    const qs = params ? '?' + new URLSearchParams(params as any).toString() : ''
+    return request<any[]>(`/queries/teacher${qs}`)
+  },
+  get: (id: string) =>
+    request<any>(`/queries/${id}`),
+  reply: (id: string, message: string) =>
+    request<any>(`/queries/${id}/reply`, { method: 'POST', body: { message } }),
+  updateStatus: (id: string, status: string) =>
+    request<any>(`/queries/${id}/status`, { method: 'PATCH', body: { status } }),
+  delete: (id: string) =>
+    request<any>(`/queries/${id}`, { method: 'DELETE' }),
 }

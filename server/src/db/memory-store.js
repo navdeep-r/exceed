@@ -29,13 +29,17 @@ let data = {
   class_members: [],
   class_sessions: [],
   class_content: [],
+  queries: [],
+  query_replies: [],
 };
 
 function loadFromDisk() {
   if (fs.existsSync(DB_FILE)) {
     try {
       const fileData = fs.readFileSync(DB_FILE, 'utf8');
-      data = JSON.parse(fileData);
+      const loaded = JSON.parse(fileData);
+      // Merge: loaded data overrides defaults, but new tables stay initialized as []
+      data = { ...data, ...loaded };
       return true;
     } catch (e) {
       console.error('Failed to load db.json, starting fresh');
