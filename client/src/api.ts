@@ -195,3 +195,27 @@ export const intelligenceAPI = {
   getHistory: (limit?: number) =>
     request<any[]>(`/intelligence/history${limit ? `?limit=${limit}` : ''}`),
 }
+
+// ── Classes API ──
+export const classesAPI = {
+  create: (name: string) =>
+    request<any>('/classes/create', { method: 'POST', body: { name } }),
+  join: (code: string) =>
+    request<any>('/classes/join', { method: 'POST', body: { code } }),
+  my: () =>
+    request<any[]>('/classes/my'),
+  get: (id: string) =>
+    request<any>(`/classes/${id}`),
+  createSession: (id: string, data: { title: string; description?: string; date?: string }) =>
+    request<any>(`/classes/${id}/session`, { method: 'POST', body: data }),
+  getSessions: (id: string) =>
+    request<any[]>(`/classes/${id}/sessions`),
+  addContent: (id: string, data: { sessionId?: string; type?: string; title: string; contentUrl?: string; body?: string }) =>
+    request<any>(`/classes/${id}/content`, { method: 'POST', body: data }),
+  getContent: (id: string) =>
+    request<any[]>(`/classes/${id}/content`),
+  getAnalytics: (id: string) =>
+    request<any>(`/classes/${id}/analytics`),
+  getStudents: (id: string) =>
+    request<any[]>(`/classes/${id}/students`),
+}

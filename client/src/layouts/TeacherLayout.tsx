@@ -19,7 +19,8 @@ import {
   Zap,
   Radio,
   Search,
-  Wifi
+  Wifi,
+  GraduationCap
 } from 'lucide-react'
 
 const navItems = [
@@ -32,6 +33,7 @@ const navItems = [
   { to: '/teacher/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/teacher/planner', icon: CalendarDays, label: 'Planner' },
   { to: '/teacher/resources', icon: FolderOpen, label: 'Resources' },
+  { to: '/teacher/classes', icon: GraduationCap, label: 'Classes' },
   { to: '/teacher/settings', icon: Settings, label: 'Settings' },
 ]
 
@@ -46,6 +48,7 @@ const pageTitles: Record<string, { title: string; subtitle: string }> = {
   '/teacher/planner': { title: 'Planner', subtitle: 'Schedule lectures and manage deadlines' },
   '/teacher/resources': { title: 'Resources', subtitle: 'Teaching materials and file management' },
   '/teacher/settings': { title: 'Settings', subtitle: 'Configure workspace and preferences' },
+  '/teacher/classes': { title: 'Classes', subtitle: 'Create and manage your classes' },
 }
 
 export default function TeacherLayout() {

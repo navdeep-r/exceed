@@ -21,6 +21,10 @@ const data = {
   attempt_logs: [],
   concept_mastery: [],
   study_streaks: [],
+  classes: [],
+  class_members: [],
+  class_sessions: [],
+  class_content: [],
 };
 
 // ── Seed Data ──
