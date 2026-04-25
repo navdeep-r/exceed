@@ -1,6 +1,25 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { lecturesAPI } from '../../api'
+import {
+  Mic,
+  MicOff,
+  Square,
+  Pause,
+  Play,
+  RotateCcw,
+  Save,
+  ArrowRight,
+  Activity,
+  Radio,
+  Volume2,
+  HardDrive,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Waves
+} from 'lucide-react'
 
 export default function RecordLecture() {
   const navigate = useNavigate()
@@ -13,17 +32,39 @@ export default function RecordLecture() {
   const [isTranscribing, setIsTranscribing] = useState(false)
   const [step, setStep] = useState<'record' | 'transcribe' | 'done'>('record')
   const [error, setError] = useState('')
+  const [micLevel, setMicLevel] = useState(0)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const chunksRef = useRef<Blob[]>([])
   const timerRef = useRef<number | null>(null)
   const recognitionRef = useRef<any>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const animFrameRef = useRef<number | null>(null)
 
   const formatTime = (s: number) => {
-    const min = Math.floor(s / 60).toString().padStart(2, '0')
+    const h = Math.floor(s / 3600).toString().padStart(2, '0')
+    const min = Math.floor((s % 3600) / 60).toString().padStart(2, '0')
     const sec = (s % 60).toString().padStart(2, '0')
-    return `${min}:${sec}`
+    return `${h}:${min}:${sec}`
   }
+
+  const monitorMicLevel = useCallback((stream: MediaStream) => {
+    const audioCtx = new AudioContext()
+    const source = audioCtx.createMediaStreamSource(stream)
+    const analyser = audioCtx.createAnalyser()
+    analyser.fftSize = 256
+    source.connect(analyser)
+    analyserRef.current = analyser
+
+    const dataArray = new Uint8Array(analyser.frequencyBinCount)
+    const tick = () => {
+      analyser.getByteFrequencyData(dataArray)
+      const avg = dataArray.reduce((a, b) => a + b, 0) / dataArray.length
+      setMicLevel(Math.min(100, (avg / 128) * 100))
+      animFrameRef.current = requestAnimationFrame(tick)
+    }
+    tick()
+  }, [])
 
   const startRecording = useCallback(async () => {
     try {
@@ -35,23 +76,24 @@ export default function RecordLecture() {
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data)
       }
-
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
         setAudioBlob(blob)
         stream.getTracks().forEach(t => t.stop())
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
       }
 
       mediaRecorder.start(250)
       mediaRecorderRef.current = mediaRecorder
       setIsRecording(true)
       setElapsed(0)
+      monitorMicLevel(stream)
 
       timerRef.current = window.setInterval(() => {
         setElapsed(e => e + 1)
       }, 1000)
 
-      // Start live transcription via Web Speech API
+      // Web Speech API
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         const recognition = new SpeechRecognition()
@@ -67,14 +109,14 @@ export default function RecordLecture() {
           }
           if (finalText) setTranscript(prev => prev + finalText)
         }
-        recognition.onerror = () => {} // silent fallback
+        recognition.onerror = () => {}
         recognition.start()
         recognitionRef.current = recognition
       }
     } catch (err: any) {
       setError('Microphone access denied. Please allow microphone permissions.')
     }
-  }, [])
+  }, [monitorMicLevel])
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
@@ -87,6 +129,7 @@ export default function RecordLecture() {
     }
     setIsRecording(false)
     setIsPaused(false)
+    setMicLevel(0)
     setStep('transcribe')
   }, [])
 
@@ -110,75 +153,153 @@ export default function RecordLecture() {
     }
   }
 
-  return (
-    <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-3xl font-bold text-surface-50">Record Lecture</h1>
-        <p className="text-surface-400 mt-1">Capture audio and generate a transcript automatically</p>
-      </div>
+  // Waveform bars
+  const waveformBars = Array.from({ length: 40 }, (_, i) => {
+    const base = isRecording ? micLevel : 0
+    const noise = Math.sin(Date.now() / 200 + i * 0.5) * 15
+    return Math.max(4, Math.min(100, base + noise * (isRecording ? 1 : 0.1)))
+  })
 
+  return (
+    <div className="space-y-6 max-w-5xl mx-auto">
       {error && (
-        <div className="p-4 rounded-xl bg-danger-500/10 border border-danger-500/20 text-danger-400 text-sm">
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3 p-4 rounded-xl text-[13px]"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', color: '#F87171' }}
+        >
+          <AlertCircle size={16} />
           {error}
-        </div>
+        </motion.div>
       )}
 
-      {/* Title input */}
-      <div className="glass rounded-2xl p-6">
-        <label className="block text-sm font-medium text-surface-300 mb-2">Lecture Title</label>
+      {/* Title Input */}
+      <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+        <label className="block text-[12px] font-medium text-gray-400 mb-2 uppercase tracking-wider">Lecture Title</label>
         <input
           type="text"
           value={title}
           onChange={e => setTitle(e.target.value)}
           placeholder="e.g., Introduction to Machine Learning"
-          className="w-full px-4 py-3 rounded-xl bg-surface-800/80 border border-surface-600/50 text-surface-100 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+          className="w-full px-4 py-3 rounded-xl text-[14px] text-gray-100 placeholder-gray-600 bg-white/[0.04] border transition-all focus:outline-none focus:border-blue-500/40"
+          style={{ borderColor: 'rgba(255,255,255,0.08)' }}
         />
       </div>
 
-      {/* Recording panel */}
-      <div className="glass rounded-2xl p-8">
+      {/* Recording Center */}
+      <div className="rounded-2xl p-8" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex flex-col items-center">
-          {/* Recording visualization */}
-          <div className={`w-32 h-32 rounded-full flex items-center justify-center mb-6 transition-all duration-300 ${
-            isRecording
-              ? 'bg-danger-500/20 border-2 border-danger-400 animate-recording'
-              : audioBlob
-                ? 'bg-success-500/20 border-2 border-success-400'
-                : 'bg-surface-800 border-2 border-surface-600'
-          }`}>
-            <span className="text-5xl">
-              {isRecording ? '🔴' : audioBlob ? '✅' : '🎙️'}
-            </span>
+          {/* Recording Orb */}
+          <div className="relative mb-8">
+            <motion.div
+              animate={isRecording ? { scale: [1, 1.08, 1], boxShadow: ['0 0 0 0 rgba(239,68,68,0)', '0 0 0 20px rgba(239,68,68,0.1)', '0 0 0 0 rgba(239,68,68,0)'] } : {}}
+              transition={isRecording ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : {}}
+              className="w-36 h-36 rounded-full flex items-center justify-center"
+              style={{
+                background: isRecording
+                  ? 'radial-gradient(circle, rgba(239,68,68,0.15), rgba(239,68,68,0.05))'
+                  : audioBlob
+                    ? 'radial-gradient(circle, rgba(16,185,129,0.15), rgba(16,185,129,0.05))'
+                    : 'radial-gradient(circle, rgba(59,130,246,0.1), rgba(59,130,246,0.03))',
+                border: `2px solid ${isRecording ? 'rgba(239,68,68,0.3)' : audioBlob ? 'rgba(16,185,129,0.3)' : 'rgba(59,130,246,0.2)'}`,
+              }}
+            >
+              {isRecording ? (
+                <Radio size={48} className="text-red-400" strokeWidth={1.2} />
+              ) : audioBlob ? (
+                <CheckCircle2 size={48} className="text-emerald-400" strokeWidth={1.2} />
+              ) : (
+                <Mic size={48} className="text-blue-400" strokeWidth={1.2} />
+              )}
+            </motion.div>
           </div>
 
           {/* Timer */}
-          <p className="text-4xl font-mono font-bold text-surface-100 mb-6 tracking-wider">
+          <p className="text-5xl font-mono font-semibold text-white mb-2 tracking-widest tabular-nums">
             {formatTime(elapsed)}
           </p>
 
+          {/* Status indicators */}
+          <div className="flex items-center gap-4 mb-8 text-[12px] text-gray-500">
+            <span className="flex items-center gap-1.5">
+              <Mic size={13} className={isRecording ? 'text-red-400' : 'text-gray-600'} />
+              {isRecording ? 'Recording' : audioBlob ? 'Stopped' : 'Ready'}
+            </span>
+            <span className="w-1 h-1 rounded-full bg-gray-700" />
+            <span className="flex items-center gap-1.5">
+              <Activity size={13} className={micLevel > 20 ? 'text-emerald-400' : 'text-gray-600'} />
+              Noise: {Math.round(micLevel)}%
+            </span>
+            <span className="w-1 h-1 rounded-full bg-gray-700" />
+            <span className="flex items-center gap-1.5">
+              <HardDrive size={13} className="text-gray-600" />
+              Local save
+            </span>
+          </div>
+
+          {/* Waveform */}
+          <div className="flex items-center gap-[2px] h-16 mb-8 px-4">
+            {waveformBars.map((h, i) => (
+              <motion.div
+                key={i}
+                animate={{ height: `${h}%` }}
+                transition={{ duration: 0.1 }}
+                className="w-[3px] rounded-full"
+                style={{
+                  background: isRecording
+                    ? `linear-gradient(180deg, rgba(239,68,68,0.8), rgba(239,68,68,0.3))`
+                    : audioBlob
+                      ? 'rgba(16,185,129,0.3)'
+                      : 'rgba(59,130,246,0.2)',
+                  minHeight: '3px',
+                }}
+              />
+            ))}
+          </div>
+
           {/* Controls */}
-          <div className="flex gap-4">
+          <div className="flex items-center gap-3">
             {!isRecording && !audioBlob && (
-              <button onClick={startRecording}
-                className="px-8 py-3 rounded-xl bg-gradient-to-r from-danger-500 to-danger-600 text-white font-semibold hover:from-danger-400 hover:to-danger-500 transition-all shadow-lg shadow-danger-500/25">
+              <button
+                onClick={startRecording}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl text-[14px] font-semibold text-white transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+                style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)', boxShadow: '0 4px 15px rgba(239,68,68,0.3)' }}
+              >
+                <Radio size={18} />
                 Start Recording
               </button>
             )}
             {isRecording && (
-              <button onClick={stopRecording}
-                className="px-8 py-3 rounded-xl bg-surface-700 text-surface-200 font-semibold hover:bg-surface-600 transition-all">
-                ⏹ Stop Recording
-              </button>
+              <>
+                <button
+                  onClick={stopRecording}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-semibold transition-all"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: 'white' }}
+                >
+                  <Square size={16} />
+                  Stop
+                </button>
+              </>
             )}
             {audioBlob && !isRecording && (
               <>
-                <button onClick={() => { setAudioBlob(null); setTranscript(''); setStep('record'); setElapsed(0) }}
-                  className="px-6 py-3 rounded-xl bg-surface-700 text-surface-200 font-semibold hover:bg-surface-600 transition-all">
-                  🔄 Re-record
+                <button
+                  onClick={() => { setAudioBlob(null); setTranscript(''); setStep('record'); setElapsed(0) }}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl text-[13px] font-semibold transition-all"
+                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#9CA3AF' }}
+                >
+                  <RotateCcw size={15} />
+                  Re-record
                 </button>
-                <button onClick={handleSave} disabled={isTranscribing}
-                  className="px-8 py-3 rounded-xl bg-gradient-to-r from-primary-600 to-primary-500 text-white font-semibold hover:from-primary-500 hover:to-primary-400 transition-all shadow-lg shadow-primary-500/25 disabled:opacity-50">
-                  {isTranscribing ? 'Saving…' : '💾 Save & Process'}
+                <button
+                  onClick={handleSave}
+                  disabled={isTranscribing}
+                  className="flex items-center gap-2 px-6 py-3 rounded-xl text-[14px] font-semibold text-white transition-all hover:scale-[1.02] disabled:opacity-50 shadow-lg"
+                  style={{ background: 'linear-gradient(135deg, #3B82F6, #6366F1)', boxShadow: '0 4px 15px rgba(59,130,246,0.3)' }}
+                >
+                  <Save size={16} />
+                  {isTranscribing ? 'Saving...' : 'Save & Process'}
                 </button>
               </>
             )}
@@ -186,34 +307,54 @@ export default function RecordLecture() {
         </div>
       </div>
 
-      {/* Live transcript */}
-      <div className="glass rounded-2xl p-6">
+      {/* Live Transcript */}
+      <div className="rounded-2xl p-5" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-surface-100">Live Transcript</h2>
-          {isRecording && <span className="flex items-center gap-2 text-xs text-danger-400"><span className="w-2 h-2 bg-danger-400 rounded-full animate-pulse" /> Listening…</span>}
+          <div className="flex items-center gap-2">
+            <Waves size={16} className="text-blue-400" />
+            <h2 className="text-[14px] font-semibold text-white">Live Transcript</h2>
+          </div>
+          {isRecording && (
+            <span className="flex items-center gap-2 text-[11px] text-red-400">
+              <span className="w-2 h-2 bg-red-400 rounded-full animate-pulse" />
+              Listening...
+            </span>
+          )}
         </div>
         <textarea
           value={transcript}
           onChange={e => setTranscript(e.target.value)}
-          placeholder={isRecording ? 'Speak into your microphone — transcript will appear here…' : 'Transcript will appear here after recording, or type/paste manually…'}
-          className="w-full h-48 px-4 py-3 rounded-xl bg-surface-800/80 border border-surface-600/50 text-surface-200 placeholder-surface-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 resize-none text-sm leading-relaxed transition-all"
+          placeholder={isRecording ? 'Speak into your microphone -- transcript will appear here...' : 'Transcript will appear here after recording, or type/paste manually...'}
+          className="w-full h-48 px-4 py-3 rounded-xl text-[13px] text-gray-300 placeholder-gray-600 bg-white/[0.03] border resize-none leading-relaxed focus:outline-none focus:border-blue-500/30"
+          style={{ borderColor: 'rgba(255,255,255,0.06)' }}
         />
       </div>
 
+      {/* Success */}
       {step === 'done' && (
-        <div className="glass rounded-2xl p-6 border border-success-500/30 glow-primary animate-slide-up">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-6"
+          style={{ background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)' }}
+        >
           <div className="flex items-center gap-4">
-            <span className="text-4xl">🎉</span>
-            <div>
-              <h3 className="text-lg font-semibold text-success-400">Lecture Saved!</h3>
-              <p className="text-sm text-surface-400">Head to Notes to refine and publish your content.</p>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.12)' }}>
+              <CheckCircle2 size={24} className="text-emerald-400" />
             </div>
-            <button onClick={() => navigate('/teacher/notes')}
-              className="ml-auto px-6 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold hover:bg-primary-500 transition-colors">
-              Go to Notes →
+            <div className="flex-1">
+              <h3 className="text-[15px] font-semibold text-emerald-400">Lecture Saved Successfully</h3>
+              <p className="text-[13px] text-gray-500 mt-0.5">Head to Notes Studio to refine and publish your content.</p>
+            </div>
+            <button
+              onClick={() => navigate('/teacher/notes')}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #3B82F6, #6366F1)' }}
+            >
+              Notes Studio <ArrowRight size={14} />
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   )
