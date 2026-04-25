@@ -52,7 +52,7 @@ export default function StudentLayout() {
           <nav className="px-3 space-y-0.5">
             <NavItem to="/student/doubts" icon={MessageSquare} label="Chat" />
             <NavItem to="/student/tutor" icon={UserPlus} label="Tutor Me" />
-            <NavItem to="/student/record" icon={Mic} label="Record Lecture" />
+
             <NavItem to="/student/quiz" icon={Brain} label="Practice" />
             <NavItem to="/student/media" icon={PlaySquare} label="Audio & Video" />
           </nav>

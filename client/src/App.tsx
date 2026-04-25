@@ -22,6 +22,7 @@ import QuizListPage from './pages/student/QuizList'
 import QuizPlayPage from './pages/student/QuizPlay'
 import FlashcardsPage from './pages/student/Flashcards'
 import PlannerPage from './pages/student/Planner'
+import StudyPlanPage from './pages/student/StudyPlan'
 import StudentDoubts from './pages/student/Doubts'
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode; role: 'teacher' | 'student' }) {
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="quiz/:id" element={<QuizPlayPage />} />
         <Route path="flashcards/:notesId" element={<FlashcardsPage />} />
         <Route path="planner" element={<PlannerPage />} />
+        <Route path="plan" element={<StudyPlanPage />} />
         <Route path="doubts" element={<StudentDoubts />} />
       </Route>
 

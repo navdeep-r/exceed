@@ -41,7 +41,7 @@ app.get('/api/health', (req, res) => {
 
 // Seed in-memory store and start server
 seedMemoryStore().then(() => {
-  app.listen(PORT, () => {
+  app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🚀 Exceed API running on http://localhost:${PORT}`);
     console.log(`   Using in-memory data store (seeded with demo data)`);
     console.log(`\n   Demo accounts:`);
