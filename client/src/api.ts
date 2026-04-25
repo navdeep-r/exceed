@@ -160,8 +160,15 @@ export const aiAPI = {
     request<any>('/ai/generate-tutor', { method: 'POST', body: { docId } }),
   chat: (message: string, docId?: string) =>
     request<any>('/ai/chat', { method: 'POST', body: { message, docId } }),
+<<<<<<< HEAD
+  generateStoryMap: (docId: string) =>
+    request<any>('/ai/generate-story-map', { method: 'POST', body: { docId } }),
+  evaluateAnswer: (docId: string, question: string, userAnswer: string) =>
+    request<any>('/ai/evaluate-answer', { method: 'POST', body: { docId, question, userAnswer } }),
+=======
   voiceChat: (message: string, history: { role: string; content: string }[] = [], context?: string) =>
     request<{ answer: string }>('/ai/voice-chat', { method: 'POST', body: { message, history, context } }),
+>>>>>>> 8e2d753127a62f98041bdfb19a7f0da9f6517537
   tts: (text: string) => {
     const token = localStorage.getItem('exceed_token')
     return fetch(`${API_BASE}/ai/tts`, {

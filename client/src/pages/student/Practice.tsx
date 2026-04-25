@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PracticeMode, PracticeState, PracticeQuestion } from '../../types/practice';
 import { Brain, Flame, Target, BookOpen, Clock, AlertTriangle, ChevronRight, CheckCircle2, RotateCcw, HelpCircle, Trophy, Gamepad2, RefreshCw, Loader2, Database, Upload, FileText } from 'lucide-react';
 import RunnerGame from './RunnerGame';
@@ -8,6 +9,7 @@ import { notesAPI, aiAPI } from '../../api';
 import { MOCK_WEAK_TOPICS, MOCK_QUESTIONS } from '../../data/mockData';
 
 export default function PracticePage() {
+  const navigate = useNavigate();
   const [state, setState] = useState<PracticeState>({
     currentMode: null, activeSession: null, isLoading: false, weakTopics: MOCK_WEAK_TOPICS
   });
@@ -196,7 +198,7 @@ export default function PracticePage() {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-fade-in">
       <ModeCard icon={<Brain className="w-6 h-6 text-primary-400" />} title="Classic Quiz" desc="Standard MCQs tailored to your level." onClick={() => openSetup('quiz')} />
       <ModeCard icon={<BookOpen className="w-6 h-6 text-accent-400" />} title="Flashcards" desc="Active recall for definitions and core concepts." onClick={() => openSetup('flashcards')} />
-      <ModeCard icon={<BookOpen className="w-6 h-6 text-emerald-400" />} title="Story Mode" desc="Apply knowledge in scenario-based challenges." onClick={() => openSetup('story')} />
+      <ModeCard icon={<BookOpen className="w-6 h-6 text-emerald-400" />} title="Story Mode" desc="Upload your notes and explore them as a gamified treasure hunt." onClick={() => navigate('/student/story')} />
       <ModeCard icon={<Clock className="w-6 h-6 text-amber-400" />} title="Challenge Mode" desc="Beat the clock with rapid fire questions." onClick={() => openSetup('challenge')} />
       <ModeCard icon={<AlertTriangle className="w-6 h-6 text-danger-400" />} title="Weak Areas" desc="Targeted practice on topics you struggle with." onClick={() => openSetup('weak_areas')} />
       <ModeCard icon={<Gamepad2 className="w-6 h-6 text-fuchsia-400" />} title="Runner Game" desc="Lane-runner game to test recall speed." onClick={() => openSetup('runner')} />
