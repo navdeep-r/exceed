@@ -13,10 +13,9 @@ import EditNotes from './pages/teacher/EditNotes'
 import TeacherDoubts from './pages/teacher/Doubts'
 import TeacherAnalytics from './pages/teacher/Analytics'
 import StudentMonitor from './pages/teacher/StudentMonitor'
-import Assessments from './pages/teacher/Assessments'
-import Planner from './pages/teacher/Planner'
-import Resources from './pages/teacher/Resources'
+
 import Settings from './pages/teacher/Settings'
+import TeacherClasses from './pages/teacher/Classes'
 
 // Student pages
 import StudentDashboard from './pages/student/Dashboard'
@@ -29,7 +28,7 @@ import PlannerPage from './pages/student/Planner'
 import StudyPlanPage from './pages/student/StudyPlan'
 import StudentDoubts from './pages/student/Doubts'
 import TutorSessionPage from './pages/student/Tutor'
-import StoryModePage from './pages/student/StoryMode'
+import MyClassesPage from './pages/student/MyClasses'
 
 function ProtectedRoute({ children, role }: { children: React.ReactNode; role: 'teacher' | 'student' }) {
   const { user, loading } = useAuth()
@@ -75,10 +74,9 @@ export default function App() {
         <Route path="doubts" element={<TeacherDoubts />} />
         <Route path="analytics" element={<TeacherAnalytics />} />
         <Route path="students" element={<StudentMonitor />} />
-        <Route path="assessments" element={<Assessments />} />
-        <Route path="planner" element={<Planner />} />
-        <Route path="resources" element={<Resources />} />
+
         <Route path="settings" element={<Settings />} />
+        <Route path="classes" element={<TeacherClasses />} />
       </Route>
 
       {/* Student routes */}
@@ -93,7 +91,7 @@ export default function App() {
         <Route path="plan" element={<StudyPlanPage />} />
         <Route path="doubts" element={<StudentDoubts />} />
         <Route path="tutor" element={<TutorSessionPage />} />
-        <Route path="story" element={<StoryModePage />} />
+        <Route path="classes" element={<MyClassesPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

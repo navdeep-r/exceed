@@ -17,7 +17,8 @@ import {
   Edit3,
   BookOpen,
   Layers,
-  Sparkles
+  Sparkles,
+  Trash2
 } from 'lucide-react'
 
 function StatusBadge({ published }: { published: boolean }) {
@@ -170,7 +171,7 @@ export default function ManageNotes() {
                 <FileText size={24} className="text-blue-400" />
               </div>
               <p className="text-base text-gray-300 font-medium">No notes yet</p>
-              <p className="text-sm text-gray- mt-1">Record a lecture and refine the transcript</p>
+              <p className="text-sm text-gray-400 mt-1">Record a lecture and refine the transcript</p>
             </div>
           ) : (
             (activeTab === 'published' ? filteredNotes.filter((n: any) => n.published_at) : filteredNotes).map((n: any, i: number) => (
@@ -199,8 +200,24 @@ export default function ManageNotes() {
                       <span className="text-xs text-gray-600">v{n.version || 1}</span>
                     </div>
                   </div>
-                  <StatusBadge published={!!n.published_at} />
-                  <ArrowRight size={14} className="text-gray-600 group-hover:text-gray-400 transition-colors" />
+                  <div className="flex items-center gap-3">
+                    <StatusBadge published={!!n.published_at} />
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (window.confirm('Are you sure you want to delete these notes? This will also remove any class sessions linked to these notes.')) {
+                          notesAPI.delete(n.id).then(() => {
+                            setNotes(notes.filter(note => note.id !== n.id));
+                          }).catch(() => alert('Failed to delete notes'));
+                        }
+                      }}
+                      className="p-1.5 rounded-md hover:bg-red-500/10 text-surface-500 hover:text-red-400 transition-colors"
+                      title="Delete Notes"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <ArrowRight size={14} className="text-gray-600 group-hover:text-gray-400 transition-colors" />
+                  </div>
                 </Link>
               </motion.div>
             ))

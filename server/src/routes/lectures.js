@@ -45,9 +45,14 @@ router.get('/:id', authMiddleware, (req, res) => {
 // POST /api/lectures/:id/transcribe
 router.post('/:id/transcribe', authMiddleware, (req, res) => {
   const { transcript } = req.body;
+  if (!transcript) {
+    return res.status(400).json({ message: 'No transcript provided' });
+  }
+
   const lecture = update('lectures', l => l.id === req.params.id && l.teacher_id === req.user.id,
     { transcript, status: 'completed' });
   if (!lecture) return res.status(404).json({ message: 'Lecture not found' });
+  
   res.json(lecture);
 });
 

@@ -70,10 +70,12 @@ export const notesAPI = {
     request<any>(`/notes/${id}${language ? `?language=${language}` : ''}`),
   update: (id: string, content: string) =>
     request<any>(`/notes/${id}`, { method: 'PUT', body: { content } }),
+  delete: (id: string) =>
+    request<any>(`/notes/${id}`, { method: 'DELETE' }),
   translate: (id: string, languages: string[]) =>
     request<any>(`/notes/${id}/translate`, { method: 'POST', body: { languages } }),
-  publish: (id: string) =>
-    request<any>(`/notes/${id}/publish`, { method: 'POST' }),
+  publish: (id: string, classIds?: string[]) =>
+    request<any>(`/notes/${id}/publish`, { method: 'POST', body: classIds ? { class_ids: classIds } : {} }),
   listForStudent: () => request<any[]>('/notes/student'),
   listForTeacher: () => request<any[]>('/notes/teacher'),
 }
@@ -92,6 +94,7 @@ export const quizAPI = {
 // ── Flashcards API ──
 export const flashcardsAPI = {
   getByNotes: (notesId: string) => request<any[]>(`/flashcards/notes/${notesId}`),
+  generate: (notesId: string) => request<any[]>(`/flashcards/notes/${notesId}/generate`, { method: 'POST' }),
   markReviewed: (id: string) =>
     request<any>(`/flashcards/${id}/review`, { method: 'POST' }),
 }
@@ -157,10 +160,15 @@ export const aiAPI = {
     request<any>('/ai/generate-tutor', { method: 'POST', body: { docId } }),
   chat: (message: string, docId?: string) =>
     request<any>('/ai/chat', { method: 'POST', body: { message, docId } }),
+<<<<<<< HEAD
   generateStoryMap: (docId: string) =>
     request<any>('/ai/generate-story-map', { method: 'POST', body: { docId } }),
   evaluateAnswer: (docId: string, question: string, userAnswer: string) =>
     request<any>('/ai/evaluate-answer', { method: 'POST', body: { docId, question, userAnswer } }),
+=======
+  voiceChat: (message: string, history: { role: string; content: string }[] = [], context?: string) =>
+    request<{ answer: string }>('/ai/voice-chat', { method: 'POST', body: { message, history, context } }),
+>>>>>>> 8e2d753127a62f98041bdfb19a7f0da9f6517537
   tts: (text: string) => {
     const token = localStorage.getItem('exceed_token')
     return fetch(`${API_BASE}/ai/tts`, {
@@ -184,4 +192,44 @@ export const practiceAPI = {
     request<any>('/practice/results', { method: 'POST', body: data }),
   clearCache: (notesId: string) =>
     request<any>(`/practice/cache/${notesId}`, { method: 'DELETE' }),
+}
+
+// ── Intelligence Engine API ──
+export const intelligenceAPI = {
+  logAttempt: (data: { conceptId: string; questionId: string; isCorrect: boolean; timeTaken?: number; subject?: string }) =>
+    request<any>('/intelligence/attempt', { method: 'POST', body: data }),
+  getMastery: () =>
+    request<any[]>('/intelligence/mastery'),
+  getWeakTopics: () =>
+    request<any[]>('/intelligence/weak-topics'),
+  getStats: () =>
+    request<any>('/intelligence/stats'),
+  getHistory: (limit?: number) =>
+    request<any[]>(`/intelligence/history${limit ? `?limit=${limit}` : ''}`),
+}
+
+// ── Classes API ──
+export const classesAPI = {
+  create: (name: string) =>
+    request<any>('/classes/create', { method: 'POST', body: { name } }),
+  join: (code: string) =>
+    request<any>('/classes/join', { method: 'POST', body: { code } }),
+  my: () =>
+    request<any[]>('/classes/my'),
+  get: (id: string) =>
+    request<any>(`/classes/${id}`),
+  delete: (id: string) =>
+    request<any>(`/classes/${id}`, { method: 'DELETE' }),
+  createSession: (id: string, data: { title: string; description?: string; date?: string }) =>
+    request<any>(`/classes/${id}/session`, { method: 'POST', body: data }),
+  getSessions: (id: string) =>
+    request<any[]>(`/classes/${id}/sessions`),
+  addContent: (id: string, data: { sessionId?: string; type?: string; title: string; contentUrl?: string; body?: string }) =>
+    request<any>(`/classes/${id}/content`, { method: 'POST', body: data }),
+  getContent: (id: string) =>
+    request<any[]>(`/classes/${id}/content`),
+  getAnalytics: (id: string) =>
+    request<any>(`/classes/${id}/analytics`),
+  getStudents: (id: string) =>
+    request<any[]>(`/classes/${id}/students`),
 }
