@@ -434,4 +434,79 @@ Do not wrap in markdown code blocks.`;
   }
 });
 
+// ── POST /api/ai/translate — Translate note content via Langbly ──
+router.post('/translate', async (req, res) => {
+  const { text, targetLang, sourceLang } = req.body;
+  if (!text || !targetLang) {
+    return res.status(400).json({ message: 'text and targetLang are required' });
+  }
+
+  const apiKey = process.env.LANGBLY_API_KEY;
+  const isMock = process.env.MOCK_DATA === '1' || !apiKey || apiKey.includes('your-langbly-api-key');
+
+  // ── Mock Mode ──
+  if (isMock) {
+    console.log(`[AI] Mocking translation to ${targetLang}...`);
+    // Simulate latency
+    await new Promise(r => setTimeout(r, 800));
+    
+    const mockPrefixes = {
+      hi: '[अनुवादित] ',
+      es: '[Traducido] ',
+      fr: '[Traduit] ',
+      ar: '[مترجم] ',
+      zh: '[翻译] ',
+    };
+    const prefix = mockPrefixes[targetLang] || `[${targetLang.toUpperCase()}] `;
+    
+    // Simple mock: just prefix the text (or some lines) to show it worked
+    const mockedText = text.split('\n').map(line => {
+      if (line.trim().startsWith('#') || line.trim().startsWith('-')) return line;
+      return prefix + line;
+    }).join('\n');
+    
+    return res.json({ translatedText: mockedText });
+  }
+
+  try {
+    // Langbly limit: 10,000 chars per request. Split large notes into chunks.
+    const CHUNK_SIZE = 8000;
+    const chunks = [];
+    for (let i = 0; i < text.length; i += CHUNK_SIZE) {
+      chunks.push(text.slice(i, i + CHUNK_SIZE));
+    }
+
+    const translatedChunks = await Promise.all(chunks.map(async (chunk) => {
+      const response = await fetch('https://api.langbly.com/language/translate/v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          q: chunk,
+          target: targetLang,
+          ...(sourceLang ? { source: sourceLang } : {}),
+          format: 'text',
+          context: 'educational study notes with markdown formatting',
+          instructions: 'Preserve all markdown formatting (##, **, -, etc). Keep technical terms accurate.',
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message || `Langbly error ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.data?.translations?.[0]?.translatedText || chunk;
+    }));
+
+    res.json({ translatedText: translatedChunks.join('') });
+  } catch (err) {
+    console.error('Translation error:', err.message);
+    res.status(500).json({ message: err.message || 'Translation failed' });
+  }
+});
+
 module.exports = router;

@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { 
   Home, Folders, ClipboardList, MessageSquare, UserPlus, 
-  Brain, Download, Trophy, Medal, Settings, Search, Bell, GraduationCap, HelpCircle
+  Brain, Trophy, Settings, Search, Bell, GraduationCap, HelpCircle
 } from 'lucide-react'
 
 export default function StudentLayout() {
@@ -60,9 +60,7 @@ export default function StudentLayout() {
             <p className="text-[10px] font-semibold text-surface-400 uppercase tracking-wider">Activity</p>
           </div>
           <nav className="px-3 space-y-0.5">
-            <NavItem to="/student/downloads" icon={Download} label="Downloads" />
             <NavItem to="/student/leaderboard" icon={Trophy} label="Leaderboards" />
-            <NavItem to="/student/achievements" icon={Medal} label="Achievements" />
           </nav>
         </div>
 

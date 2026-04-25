@@ -166,6 +166,8 @@ export const aiAPI = {
     request<any>('/ai/evaluate-answer', { method: 'POST', body: { docId, question, userAnswer } }),
   voiceChat: (message: string, history: { role: string; content: string }[] = [], context?: string) =>
     request<{ answer: string }>('/ai/voice-chat', { method: 'POST', body: { message, history, context } }),
+  translate: (text: string, targetLang: string, sourceLang?: string) =>
+    request<{ translatedText: string }>('/ai/translate', { method: 'POST', body: { text, targetLang, sourceLang } }),
   tts: (text: string) => {
     const token = localStorage.getItem('exceed_token')
     return fetch(`${API_BASE}/ai/tts`, {
