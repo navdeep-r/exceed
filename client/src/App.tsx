@@ -13,6 +13,10 @@ import EditNotes from './pages/teacher/EditNotes'
 import TeacherDoubts from './pages/teacher/Doubts'
 import TeacherAnalytics from './pages/teacher/Analytics'
 import StudentMonitor from './pages/teacher/StudentMonitor'
+import Assessments from './pages/teacher/Assessments'
+import Planner from './pages/teacher/Planner'
+import Resources from './pages/teacher/Resources'
+import Settings from './pages/teacher/Settings'
 
 // Student pages
 import StudentDashboard from './pages/student/Dashboard'
@@ -31,10 +35,10 @@ function ProtectedRoute({ children, role }: { children: React.ReactNode; role: '
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-950">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0F1F' }}>
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
-          <p className="text-surface-400 text-sm">Loading…</p>
+          <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          <p className="text-gray-500 text-sm">Loading...</p>
         </div>
       </div>
     )
@@ -50,8 +54,8 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-950">
-        <div className="w-12 h-12 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0F1F' }}>
+        <div className="w-10 h-10 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
       </div>
     )
   }
@@ -70,6 +74,10 @@ export default function App() {
         <Route path="doubts" element={<TeacherDoubts />} />
         <Route path="analytics" element={<TeacherAnalytics />} />
         <Route path="students" element={<StudentMonitor />} />
+        <Route path="assessments" element={<Assessments />} />
+        <Route path="planner" element={<Planner />} />
+        <Route path="resources" element={<Resources />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
 
       {/* Student routes */}
